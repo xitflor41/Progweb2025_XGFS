@@ -1,0 +1,98 @@
+ head{
+    font-size: 100;
+ }
+ 
+ body {
+                font-family:'Times New Roman', Times, serif;
+                letter-spacing: -1px;
+                margin: 0;
+                padding: 0;
+                color: #333;
+                line-height: 1.6;
+            }
+            
+            #wrap {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            
+            #header h1 {
+                text-align: center;
+                font-size: 2.5em;
+                color: #000000;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #bebebe;
+                padding-bottom: 10px;
+            }
+            
+            #content h2 {
+                font-size: 1.8em;
+                color: #000000;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            
+            #content h1 {
+                font-size: 2em;
+                color: #000000;
+                text-align: center;
+                margin-top: 0;
+                margin-bottom: 30px;
+            }
+            
+            #principio {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            
+            #principio p {
+                font-size: 1.1em;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            
+            .aparted {
+                background-color: #fffefd;
+                border: 1px solid #535353;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            
+            .aparted h1 {
+                font-size: 1.5em;
+                color: #000000;
+                text-align: left;
+                margin-top: 0;
+                border-bottom: 1px solid #D4AF37;
+                padding-bottom: 10px;
+            }
+            
+            .aparted p {
+                font-size: 1em;
+                margin: 10px 0;
+            }
+            
+            .aparted h2 {
+                font-size: 1.2em;
+                color: #8B4513;
+                margin: 15px 0 5px 0;
+            }
+            
+            #footer {
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #D4AF37;
+                font-size: 0.9em;
+                color: #666;
+            }
+            
+            hr {
+                border: 0;
+                height: 1px;
+                background-color: #D4AF37;
+                margin: 30px 0;
+            }

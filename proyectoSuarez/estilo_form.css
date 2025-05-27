@@ -1,0 +1,102 @@
+body {
+    background-color: #483517;
+    margin: 0;
+    padding: 30px;
+}
+
+#wrap {
+    margin: 0 auto;
+    width: 90%;
+    max-width: 800px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+#header {
+    padding: 20px;
+    text-align: center;
+    background-color: #DACBB0;
+    text-transform: uppercase;
+
+}
+
+#header h1 {
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: -1px;
+    color: #483517;
+    margin: 0;
+}
+
+#sub-header {
+    text-align: center;
+    background-color: #DACBB0;
+    padding: 15px 0;
+
+}
+
+#sub-header h2 {
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: -1px;
+    color: #483517;
+    margin: 0;
+}
+
+#content {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;
+    padding: 20px;
+    background-color: #f4f1e9;
+    color: #483517;
+}
+
+#content table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#content table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#content table input,
+#content table textarea {
+    width: calc(100% - 16px);
+    padding: 10px;
+    border: 1px solid #a0a0a0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px #676767;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+#content table input:focus,
+#content table textarea:focus {
+    border-color: #7E715B;
+    box-shadow: 0 0 8px rgba(126, 113, 91, 0.8);
+}
+
+#content table input[type="submit"] {
+    background-color: #9C7F49;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#content table input[type="submit"]:hover {
+    background-color: #7E715B;
+}
+
