@@ -1,187 +1,207 @@
 <?php
 session_start();
 
-// Verificación de autenticación y rol
+
 if (!isset($_SESSION['idUsuario']) || $_SESSION['rol'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
+
+if (isset($_POST['idTienda'])) {
+    $_SESSION['idTienda'] = intval($_POST['idTienda']);
+}
+
+
 require_once 'MySQLConnector.php';
 
-// Inicializar variables
 $error = '';
-$mensaje = '';
-$articulo = [];
+$exito = '';
+$articulo = null;
 $categorias = [];
 
 try {
-    $dbConnector = new MysqlConnector();
-    $dbConnector->Connect();
+    $db = new MysqlConnector();
+    $db->Connect();
 
-    // Validar ID del artículo
-    $idArticulo = isset($_POST['id']) ? intval($_POST['id']) : 0;
-    
-    if ($idArticulo <= 0) {
-        throw new Exception("ID de artículo no válido o no especificado.");
+    // Obtener idArticulo desde POST o GET, dependiendo del método
+    $idArticulo = null;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $idArticulo = $_POST['idArticulo'] ?? null;
+    } else {
+        $idArticulo = $_GET['idArticulo'] ?? null;
     }
 
-    // Obtener datos del artículo (compatible con MySQL 5)
-    $query = "SELECT idArticulo, idCategoria, descripcion, caracteristicas, precio, imagen FROM Articulos WHERE idArticulo = ?";
-    $stmt = $dbConnector->connection->prepare($query);
-    
-    if (!$stmt) {
-        throw new Exception("Error al preparar la consulta: " . $dbConnector->connection->error);
+    if (!$idArticulo || !is_numeric($idArticulo)) {
+        throw new Exception("ID de artículo inválido.");
     }
-    
+
+    $idArticulo = intval($idArticulo);
+
+    // Obtener datos del artículo
+    $stmt = $db->connection->prepare("SELECT a.*, e.cantidad 
+    FROM Articulos a
+    JOIN Existencia e ON a.idArticulo = e.idArticulo
+    WHERE a.idArticulo = ?");
     $stmt->bind_param("i", $idArticulo);
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Error al ejecutar la consulta: " . $stmt->error);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        throw new Exception("Artículo no encontrado.");
     }
-    
-    $stmt->bind_result($id, $cat, $desc, $caract, $precio, $img);
-    
-    if (!$stmt->fetch()) {
-        throw new Exception("No se encontró el artículo con ID: $idArticulo");
-    }
-    
-    // Almacenar datos del artículo
-    $articulo = [
-        'idArticulo' => $id,
-        'idCategoria' => $cat,
-        'descripcion' => $desc,
-        'caracteristicas' => $caract,
-        'precio' => $precio,
-        'imagen' => $img
-    ];
-    
+    $articulo = $result->fetch_assoc();
     $stmt->close();
 
-    // Obtener categorías (compatible con MySQL 5)
-    $queryCategorias = "SELECT idCategoria, descripcion FROM Categorias";
-    $resultCategorias = $dbConnector->connection->query($queryCategorias);
-    
-    if (!$resultCategorias) {
-        throw new Exception("Error al obtener categorías: " . $dbConnector->connection->error);
-    }
-    
-    while ($row = $resultCategorias->fetch_assoc()) {
+    // Obtener categorías
+    $resCategorias = $db->connection->query("SELECT idCategoria, descripcion FROM Categorias");
+    while ($row = $resCategorias->fetch_assoc()) {
         $categorias[] = $row;
     }
 
+
+
+
+
+    
     // Procesar formulario
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $descripcion = isset($_POST['descripcion']) ? $dbConnector->connection->real_escape_string($_POST['descripcion']) : '';
-        $precio = isset($_POST['precio']) ? floatval($_POST['precio']) : 0;
-        $caracteristicas = isset($_POST['caracteristicas']) ? $dbConnector->connection->real_escape_string($_POST['caracteristicas']) : '';
-        $idCategoria = isset($_POST['idCategoria']) ? intval($_POST['idCategoria']) : 0;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-        // Validar datos requeridos
-        if (empty($descripcion) || $precio <= 0 || $idCategoria <= 0) {
-            throw new Exception("Por favor complete todos los campos requeridos correctamente.");
-        }
+        $cantidadRestock = isset($_POST['cantidad_restock']) ? intval($_POST['cantidad_restock']) : 0;
 
-        // Manejo de la imagen
-        $imagen = $articulo['imagen'];
-        if (isset($_FILES['imagen']['tmp_name']) && is_uploaded_file($_FILES['imagen']['tmp_name'])) {
-            // Verificar tamaño de la imagen (máximo 1MB)
-            if ($_FILES['imagen']['size'] > 1048576) {
-                throw new Exception("La imagen es demasiado grande. Tamaño máximo permitido: 1MB");
-            }
-            
-            $imagen = file_get_contents($_FILES['imagen']['tmp_name']);
-        }
+// Actualizar artículo
+$stmt = $db->connection->prepare("
+    UPDATE Articulos 
+    SET descripcion = ?, caracteristicas = ?, precio = ?, idCategoria = ?, activo = ?
+    WHERE idArticulo = ?
+");
+$stmt->bind_param("ssdiii", $descripcion, $caracteristicas, $precio, $idCategoria, $activo, $idArticulo);
 
-        // Actualizar artículo (compatible con MySQL 5)
-        $queryUpdate = "UPDATE Articulos SET 
-                        descripcion = ?, 
-                        precio = ?, 
-                        caracteristicas = ?, 
-                        imagen = ?, 
-                        idCategoria = ? 
-                        WHERE idArticulo = ?";
-        
-        $stmt = $dbConnector->connection->prepare($queryUpdate);
-        
-        if (!$stmt) {
-            throw new Exception("Error al preparar la actualización: " . $dbConnector->connection->error);
-        }
-        
-        $null = null;
-        $stmt->bind_param("sdssii", $descripcion, $precio, $caracteristicas, $null, $idCategoria, $idArticulo);
-        $stmt->send_long_data(3, $imagen); // Para manejar el campo BLOB
-        
-        if ($stmt->execute()) {
-            $_SESSION['mensaje'] = "Artículo actualizado exitosamente.";
-            header("Location: gestionar_articulos.php");
-            exit();
+if ($stmt->execute()) {
+    $stmt->close();
+
+    // Si hay restock, actualiza la tabla Existencia
+    if ($cantidadRestock > 0) {
+        $stmtExistencia = $db->connection->prepare("
+            UPDATE Existencia
+            SET cantidad = cantidad + ?
+            WHERE idArticulo = ? AND idTienda = ?
+        ");
+        $stmtExistencia->bind_param("iii", $cantidadRestock, $idArticulo, $_SESSION['idTienda']); // 👈 usamos el idTienda del admin
+        $stmtExistencia->execute();
+        $stmtExistencia->close();
+    }
+
+    header("Location: editar_articulo.php?idArticulo=$idArticulo&exito=1");
+    exit();
+}
+
+
+
+
+
+        $descripcion = trim($_POST['descripcion']);
+        $caracteristicas = trim($_POST['caracteristicas']);
+        $precio = floatval($_POST['precio']);
+        $idCategoria = !empty($_POST['idCategoria']) ? intval($_POST['idCategoria']) : null;
+        $activo = isset($_POST['activo']) ? 1 : 0;
+
+        if (empty($descripcion) || empty($caracteristicas) || $precio <= 0) {
+            $error = "Todos los campos obligatorios deben llenarse correctamente.";
         } else {
-            throw new Exception("Error al actualizar el artículo: " . $stmt->error);
+            $stmt = $db->connection->prepare("
+                UPDATE Articulos 
+                SET descripcion = ?, caracteristicas = ?, precio = ?, idCategoria = ?, activo = ?
+                WHERE idArticulo = ?
+            ");
+            $stmt->bind_param("ssdiii", $descripcion, $caracteristicas, $precio, $idCategoria, $activo, $idArticulo);
+
+            if ($stmt->execute()) {
+                if ($stmt->affected_rows > 0) {
+                    header("Location: editar_articulo.php?idArticulo=$idArticulo&exito=1");
+                    exit();
+                } else {
+                    $error = "No se realizaron cambios.";
+                }
+            } else {
+                $error = "Error al ejecutar la consulta: " . $stmt->error;
+            }
+
+            $stmt->close();
         }
     }
 
+    $db->CloseConnection();
 } catch (Exception $e) {
-    $error = $e->getMessage();
+    $error = "Error: " . $e->getMessage();
+}
+
+if (isset($_GET['exito'])) {
+    $exito = "Artículo actualizado correctamente.";
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Editar Artículo</title>
     <link rel="stylesheet" href="Estilo.css">
-    <style>
-        .error { color: red; }
-        .success { color: green; }
-        .image-preview { max-width: 200px; max-height: 200px; }
-    </style>
 </head>
 <body>
-    <h1>Editar Artículo</h1>
-    
-    <?php if (!empty($error)): ?>
-        <div class="error"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
-    
-    <?php if (!empty($mensaje)): ?>
-        <div class="success"><?php echo htmlspecialchars($mensaje); ?></div>
-    <?php endif; ?>
-    
-    <form method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="idArticulo" value="<?php echo $articulo['idArticulo']; ?>">
-        
-        <label>Descripción:*</label><br>
-        <input type="text" name="descripcion" value="<?php echo htmlspecialchars($articulo['descripcion']); ?>" maxlength="100" required><br>
-
-        <label>Precio:*</label><br>
-        <input type="number" name="precio" step="0.01" min="0" value="<?php echo htmlspecialchars($articulo['precio']); ?>" required><br>
-
-        <label>Características:</label><br>
-        <textarea name="caracteristicas" maxlength="100"><?php echo htmlspecialchars($articulo['caracteristicas']); ?></textarea><br>
-
-        <label>Imagen actual:</label><br>
-        <?php if (!empty($articulo['imagen'])): ?>
-            <img class="image-preview" src="data:image/jpeg;base64,<?php echo base64_encode($articulo['imagen']); ?>"><br>
-        <?php else: ?>
-            <p>No hay imagen</p>
+<div id="wrap">
+    <div id="header">
+        <a href="gestionar_articulos.php" class="btn-volver">← Volver</a>
+        <h1>Editar Artículo</h1>
+        <?php if ($error): ?>
+            <div class="error"><?= htmlspecialchars($error) ?></div>
+        <?php elseif ($exito): ?>
+            <div class="exito"><?= htmlspecialchars($exito) ?></div>
         <?php endif; ?>
-        
-        <label>Nueva imagen (opcional, máximo 1MB):</label><br>
-        <input type="file" name="imagen" accept="image/jpeg,image/png,image/gif"><br>
+    </div>
 
-        <label>Categoría:*</label><br>
-        <select name="idCategoria" required>
-            <option value="">Seleccione una categoría</option>
-            <?php foreach ($categorias as $categoria): ?>
-                <option value="<?php echo $categoria['idCategoria']; ?>" <?php echo ($categoria['idCategoria'] == $articulo['idCategoria']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($categoria['descripcion']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br>
+    <?php if ($articulo): ?>
+        <form method="POST">
+            <label>Descripción *</label>
+            <input type="text" name="descripcion" value="<?= htmlspecialchars($articulo['descripcion']) ?>" required>
 
-        <button type="submit">Actualizar</button>
-        <a href="gestionar_articulos.php" class="button">Cancelar</a>
-    </form>
+            <label>Características *</label>
+            <input type="text" name="caracteristicas" value="<?= htmlspecialchars($articulo['caracteristicas']) ?>" required>
+
+            <label>Precio *</label>
+            <input type="number" name="precio" step="0.01" value="<?= htmlspecialchars($articulo['precio']) ?>" required>
+
+            <label>Categoría</label>
+            <select name="idCategoria">
+                <option value="">-- Ninguna --</option>
+                <?php foreach ($categorias as $cat): ?>
+                    <option value="<?= $cat['idCategoria'] ?>" <?= ($articulo['idCategoria'] == $cat['idCategoria']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cat['descripcion']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+
+            <!-- Mostrar stock actual -->
+            <p><strong>Stock actual:</strong> <?= htmlspecialchars($articulo['cantidad']) ?> unidades</p>
+
+            <!-- Campo para restock -->
+            <label>Agregar al stock</label>
+            <input type="number" name="cantidad_restock" min="0" placeholder="Cantidad a agregar">
+
+
+            <label>
+                <input type="hidden" name="idArticulo" value="<?= $articulo['idArticulo'] ?>">
+                <input type="checkbox" name="activo" <?= $articulo['activo'] ? 'checked' : '' ?>>
+                Artículo activo
+            </label>
+
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    <?php endif; ?>
+
+    <div id="footer">
+        <p>Diseñado por Xitlalic Guadalupe Flores Salcedo.</p>
+    </div>
+</div>
 </body>
 </html>

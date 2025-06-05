@@ -1,10 +1,14 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['idUsuario'])) {
+    header("Location: login.php");
+    exit();
+}
+
 require_once 'MySQLConnector.php';
 
-$con = new MysqlConnector();
-$con->Connect();
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $idCliente = $_POST['idCliente'];
     $nombre = $_POST['nombre'];
     $apellido = $_POST['apellido'];
@@ -15,20 +19,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $estado = $_POST['estado'];
     $pais = $_POST['pais'];
     $codigo_postal = $_POST['codigo_postal'];
+    $nuevaContrasena = $_POST['nueva_contrasena'];
 
-    $query = "UPDATE Clientes SET nombre=?, apellido=?, correo=?, direccion=?, colonia=?, ciudad=?, estado=?, pais=?, codigo_postal=? WHERE idCliente=?";
-    $stmt = $con->PrepareStatement($query);
-    $stmt->bind_param("ssssssssii", $nombre, $apellido, $correo, $direccion, $colonia, $ciudad, $estado, $pais, $codigo_postal, $idCliente);
+    $con = new MysqlConnector();
+    $con->Connect();
 
-    if ($stmt->execute()) {
-        header("Location: perfil.php?actualizado=1");
-        exit();
-    } else {
-        echo "Error al actualizar: " . $stmt->error;
+    // Actualizar cliente
+    $stmt = $con->PrepareStatement("
+        UPDATE Clientes SET
+            nombre = ?, apellido = ?, correo = ?, direccion = ?, colonia = ?,
+            ciudad = ?, estado = ?, pais = ?, codigo_postal = ?
+        WHERE idCliente = ?
+    ");
+    $stmt->bind_param("sssssssssi", $nombre, $apellido, $correo, $direccion, $colonia, $ciudad, $estado, $pais, $codigo_postal, $idCliente);
+    $stmt->execute();
+    $stmt->close();
+
+    // Si se ingresó una nueva contraseña, actualizarla en la tabla Usuarios
+    if (!empty($nuevaContrasena)) {
+    $hash = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
+
+    $stmt2 = $con->PrepareStatement("UPDATE Usuarios SET password = ? WHERE idUsuario = ?");
+    if (!$stmt2) {
+        die("Error al preparar la actualización de contraseña: " . $con->connection->error);
     }
+
+    $stmt2->bind_param("si", $hash, $_SESSION['idUsuario']);
+    if (!$stmt2->execute()) {
+        die("Error al actualizar contraseña: " . $stmt2->error);
+    }
+
+    $stmt2->close();
 }
-$con->CloseConnection();
-// Redirigir a la página de perfil
-header("Location: perfil.php");
-exit();
+
+
+    $con->CloseConnection();
+
+    // Redireccionar con mensaje (opcional)
+    header("Location: perfil.php?actualizado=1");
+    exit();
+}
 ?>

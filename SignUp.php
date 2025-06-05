@@ -9,19 +9,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     $datos = [
-        'nombre' => trim($_POST['nombre']),
-        'apellido' => trim($_POST['apellido']),
-        'correo' => trim($_POST['correo']),
-        'email' => trim($_POST['email']),
-        'password' => trim($_POST['password']),
-        'confirm_password' => trim($_POST['confirm_password']),
-        'direccion' => trim($_POST['direccion']),
-        'colonia' => trim($_POST['colonia']),
-        'ciudad' => trim($_POST['ciudad']),
-        'estado' => trim($_POST['estado']),
-        'pais' => trim($_POST['pais']),
-        'codigo_postal' => trim($_POST['codigo_postal'])
-    ];
+    'nombre' => trim($_POST['nombre']),
+    'apellido' => trim($_POST['apellido']),
+    'correo' => trim($_POST['correo']),
+    'email' => trim($_POST['email']),
+    'username' => trim($_POST['username']),
+    'password' => trim($_POST['password']),
+    'confirm_password' => trim($_POST['confirm_password']),
+    'direccion' => trim($_POST['direccion']),
+    'colonia' => trim($_POST['colonia']),
+    'ciudad' => trim($_POST['ciudad']),
+    'estado' => trim($_POST['estado']),
+    'pais' => trim($_POST['pais']),
+    'codigo_postal' => trim($_POST['codigo_postal'])
+];
+
 
     if ($datos['password'] !== $datos['confirm_password']) {
         $error = "Las contraseñas no coinciden";
@@ -51,11 +53,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $idCliente = mysqli_insert_id($conn);
             mysqli_stmt_close($stmtCliente);
 
+            $queryCheck = "SELECT idUsuario FROM Usuarios WHERE username = ?";
+            $stmtCheck = mysqli_prepare($conn, $queryCheck);
+            mysqli_stmt_bind_param($stmtCheck, "s", $datos['username']);
+            mysqli_stmt_execute($stmtCheck);
+            mysqli_stmt_store_result($stmtCheck);
+
+            if (mysqli_stmt_num_rows($stmtCheck) > 0) {
+                $error = "El nombre de usuario ya está en uso.";
+            } else {
+                // Aquí va el bloque de inserción original
+            }
+
+
+
             // Insertar en Usuarios
             $hashed_password = password_hash($datos['password'], PASSWORD_BCRYPT);
-            $queryUsuario = "INSERT INTO Usuarios (idCliente, email, password) VALUES (?, ?, ?)";
+            $queryUsuario = "INSERT INTO Usuarios (idCliente, email, password, username) VALUES (?, ?, ?, ?)";
             $stmtUsuario = mysqli_prepare($conn, $queryUsuario);
-            mysqli_stmt_bind_param($stmtUsuario, "iss", $idCliente, $datos['email'], $hashed_password);
+            mysqli_stmt_bind_param($stmtUsuario, "isss", $idCliente, $datos['email'], $hashed_password, $datos['username']);
+            
             mysqli_stmt_execute($stmtUsuario);
             mysqli_stmt_close($stmtUsuario);
 
@@ -87,22 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="Estilo.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - Joyería Suarez</title>
     <style>
-        /* Estilos CSS para el formulario */
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #8B4513; text-align: center; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .btn { background-color: #8B4513; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn:hover { background-color: #A0522D; }
-        .error { color: #dc3545; margin-bottom: 15px; }
-        .success { color: #28a745; margin-bottom: 15px; }
-        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
     </style>
 </head>
 <body>
@@ -131,12 +138,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             
             <div class="form-group">
-                <label for="correo">Confirmar Correo Electrónico:</label>
+                <label for="correo">Correo Electrónico:</label>
                 <input type="email" id="correo" name="correo" required>
+            </div>
 
             <div class="form-group">
-                <label for="email">Correo Electrónico:</label>
+                <label for="email">Confirmar Correo Electrónico:</label>
                 <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Nombre de Usuario:</label>
+                <input type="text" id="username" name="username" required>
             </div>
             
             <div class="two-columns">
@@ -188,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <button type="submit" class="btn">Registrarse</button>
             <p>¿Ya tienes una cuenta? <a href="Login.php">Inicia sesión aquí</a></p>
-            <button type="button" class="btn" onclick="window.location.href='main.php'">Regresar</button>
+            <button type="button" class="btn" onclick="window.location.href='index.php'">Regresar</button>
         </form>
     </div>
 </body>

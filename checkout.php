@@ -94,6 +94,9 @@ try {
             mysqli_commit($dbConnector->connection);
             unset($_SESSION['carrito']);
             $success = "¡Compra realizada con éxito!";
+            header("Location: ticket.php?idVenta=último_id_generado");
+            exit();
+
             
         } catch (Exception $e) {
             mysqli_rollback($dbConnector->connection);
@@ -241,10 +244,13 @@ try {
             </form>
             <?php endif; ?>
         </div>
+
+        
         
         <div class="checkout-section">
             <h1>Resumen de Compra</h1>
             
+            <?php if (isset($_SESSION['carrito']) && is_array($_SESSION['carrito'])): ?>
             <?php foreach ($_SESSION['carrito'] as $idArticulo => $item): 
                 $articulo = $articulos[$idArticulo] ?? ['descripcion' => 'Artículo no encontrado', 'precio' => 0];
             ?>
@@ -259,10 +265,18 @@ try {
                     </div>
                 </div>
             <?php endforeach; ?>
-            
+        <?php else: ?>
+            <p>No hay artículos en el carrito.</p>
+        <?php endif; ?>
+
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D4AF37;">
                 <h2>Total: $<?php echo number_format($total, 2); ?></h2>
             </div>
+        </div>
+
+        <div class="Volver">
+            <a href="Articulos.php" class="btn">Volver la pagina principal</a>
+
         </div>
     </div>
 </body>

@@ -48,67 +48,74 @@ $con->CloseConnection();
             width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;
         }
         .update-btn { margin-top: 20px; padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        .header {
+            font-family: 'Times New Roman', Times, serif;
+            text-align: center;
+            font-weight: lighter;
+            letter-spacing: -1px;
+        }
+
+        .menu {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu ul li {
+    margin: 10px 0;
+    text-align: center; /* Centra el botón si es inline-block */
+}
+
+.menu ul li a {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    color: #333;
+}
+
+.menu ul li a:hover {
+    background-color: #d0d0d0;
+}
+
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="container">
+        
             <h1>Joyería Suarez</h1>
-        </div>
+        
     </div>
     
     <div class="container">
         <div class="profile-header">
             <h2 class="profile-title">Bienvenido, <?php echo htmlspecialchars($_SESSION['nombre']); ?></h2>
-            <a href="logout.php" class="logout-btn">Cerrar Sesión</a>
+
+            <div class="header-buttons">
+            <button class="header-btn" onclick="location.href='logout.php'">Cerrar Sesion</button>
+            <button class="header-btn" onclick="location.href='Articulos.php'">Volver a la pagina principal</button>
+            </div>
+           
         </div>
 
-        <form action="actualizar_perfil.php" method="POST" class="profile-info">
-            <input type="hidden" name="idCliente" value="<?php echo $cliente['idCliente']; ?>">
+        <div class="menu">
 
-            <div>
-                <div class="info-group">
-                    <div class="info-label">Nombre:</div>
-                    <input type="text" name="nombre" value="<?php echo htmlspecialchars($cliente['nombre']); ?>" required>
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Apellido:</div>
-                    <input type="text" name="apellido" value="<?php echo htmlspecialchars($cliente['apellido']); ?>" required>
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Email:</div>
-                    <input type="email" name="correo" value="<?php echo htmlspecialchars($cliente['correo']); ?>" required>
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Dirección:</div>
-                    <input type="text" name="direccion" value="<?php echo htmlspecialchars($cliente['direccion']); ?>">
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Colonia:</div>
-                    <input type="text" name="colonia" value="<?php echo htmlspecialchars($cliente['colonia']); ?>">
-                </div>
-            </div>
-
-            <div>
-                <div class="info-group">
-                    <div class="info-label">Ciudad:</div>
-                    <input type="text" name="ciudad" value="<?php echo htmlspecialchars($cliente['ciudad']); ?>">
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Estado:</div>
-                    <input type="text" name="estado" value="<?php echo htmlspecialchars($cliente['estado']); ?>">
-                </div>
-                <div class="info-group">
-                    <div class="info-label">País:</div>
-                    <input type="text" name="pais" value="<?php echo htmlspecialchars($cliente['pais']); ?>">
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Código Postal:</div>
-                    <input type="number" name="codigo_postal" value="<?php echo htmlspecialchars($cliente['codigo_postal']); ?>">
-                </div>
-                <button type="submit" class="update-btn">Actualizar Perfil</button>
-            </div>
-        </form>
+            <h2>¿Que deseas hacer hoy?</h2>
+            <ul>
+                <li><a href="editar_perfil.php">Editar mis datos</a></li>
+                <li><a href="ver_compras.php">Mis compras</a></li>
+            </ul>
+        </div>
     </div>
 </body>
 </html>

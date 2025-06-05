@@ -77,6 +77,9 @@
         justify-content: flex-end; /* Mueve el botón a la derecha */
         }
 
+       
+        
+
         .logout-btn {
             font-family: 'Times New Roman', Times, serif;
             font-weight: lighter;
@@ -230,8 +233,8 @@
         
          .container { 
              font-family: 'Times New Roman', Times, serif;
-        font-weight: lighter;
-        letter-spacing: -0.5px;
+            font-weight: lighter;
+            letter-spacing: -0.5px;
             max-width: 400px; 
             margin: 50px auto;
             padding: 20px; 
@@ -250,6 +253,10 @@
             font-family: 'Times New Roman', Times, serif;
             font-weight: lighter;
             letter-spacing: -0.75px;
+            }
+
+            .container ul li a{
+                margin-bottom: auto;
             }
         .form-group { margin-bottom: 15px; }
         .form-group label {

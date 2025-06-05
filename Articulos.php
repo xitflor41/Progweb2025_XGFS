@@ -39,6 +39,7 @@ if (!isset($_SESSION['tienda_seleccionada']) && !empty($tiendas)) {
     <title>Joyería Suarez - Catálogo</title>
     <meta charset="UTF-8">
 
+
     <!-- En Articulos.php y otras páginas -->
 <?php if ($totalProductos > 0): ?>
     <a href="carrito.php" class="contador-carrito"><?= $totalProductos ?></a>
@@ -48,6 +49,9 @@ if (!isset($_SESSION['tienda_seleccionada']) && !empty($tiendas)) {
     </style>
 </head>
 <body>
+
+    
+
     <?php 
     // Calcular total de productos para el contador
     $totalProductos = 0;
@@ -71,10 +75,10 @@ if (!isset($_SESSION['tienda_seleccionada']) && !empty($tiendas)) {
                 
         </div>
         <div id="header">
-            <div class="logout-container">
-                 <a href="logout.php" class="logout-btn">Cerrar Sesión</a>
-
-            </div>
+            <div class="header-buttons">
+                    <button class="header-btn" onclick="location.href='logout.php'">Cerrar Sesion</button>
+                    <button class="header-btn" onclick="location.href='perfil.php'">Mi Perfil</button>
+                </div>
             <h1>Joyería Suarez</h1>
             <h2>Catálogo de Artículos</h2>
             <div class="profile-header">
@@ -107,13 +111,12 @@ if (!isset($_SESSION['tienda_seleccionada']) && !empty($tiendas)) {
         <?php
         try {
             // Consulta para obtener artículos
-            $query = "SELECT 
-            a.*, 
-            c.descripcion AS categoria
-          FROM Articulos a, Categorias c
-          WHERE a.idCategoria = c.idCategoria
+            $query = "SELECT a.*, c.descripcion AS categoria
+          FROM Articulos a
+          JOIN Categorias c ON a.idCategoria = c.idCategoria
+          WHERE a.activo = 1
           ORDER BY a.idArticulo";
-            
+
             $result = $dbConnector->ExecuteQuery($query);
             
            if(mysqli_num_rows($result) > 0) {

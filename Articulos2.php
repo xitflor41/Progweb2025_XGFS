@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="Estilo.css">
     <title>Joyería Suarez - Catálogo</title>
     <meta charset="UTF-8">
     <style>
@@ -9,6 +10,12 @@
 <body>
     <div id="wrap">
         <div id="header">
+            <div class="header-buttons">
+                <button class="header-btn" onclick="location.href='login.php'">Acceder</button>
+                <button class="header-btn" onclick="location.href='SignUp.php'">Crear cuenta</button>
+                <button class="header-btn" onclick="location.href='index.php'">Volver al inicio</button>
+
+            </div>
             <h1>Joyería Suarez</h1>
             <h2>Catálogo de Artículos</h2>
 

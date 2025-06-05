@@ -1,0 +1,88 @@
+#wrap {
+    
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+#header {
+
+    text-align: center;
+    background-color: #DACBB0;
+    text-transform: uppercase;
+    padding: 20px 0;
+    border-radius: 10px 10px 0 0;
+}
+
+#header h1{
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 70px;
+    font-weight: 100;
+    letter-spacing: -2px;
+    padding: 12px 0 12px 0;
+    color: #483517;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+
+#content {
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+}
+
+.linetime {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #9D969C;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: #483517;
+    letter-spacing: -1px;
+}
+
+/* Alternamos imagen y texto */
+.linetime img {
+    width: 40%;
+    border-radius: 10px;
+}
+
+.linetime .text {
+    width: 55%;
+    padding: 0 20px;
+}
+
+/* La segunda sección tendrá la imagen a la derecha */
+.linetime:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
+
+
+
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .linetime {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .linetime img,
+    .linetime .text {
+        width: 100%;
+        padding: 0;
+    }
+}
+
+#footer {
+    background: #483517;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+}

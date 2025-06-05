@@ -4,6 +4,15 @@
         <link rel="stylesheet" href="Estilo.css">
         <title>Joyería Suarez</title>
         <meta charset="UTF-8">
+
+        <style>
+            #content img{
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+            }
+        </style>
     </head>
     <body>
         <div id="wrap">
@@ -21,7 +30,7 @@
                 <ul>
                     <li><a href="Articulos2.php">Productos</a></li>
                     <li><a href="history.html">Nuestra Historia</a></li>
-                    <li><a href="Contactus.html">Contáctanos</a></li>
+                   
                 </ul>
             </div>
 
@@ -35,7 +44,6 @@
                 </p>
                 <img src="Tiendas.jpg">
 
-                
             </div>
 
             <div id="footer">
